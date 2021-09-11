@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La sécurisation des routes de la ville de Taroudant</title>
+
+    <!-- leaflet css  -->
+    <link rel="stylesheet" href="./data/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+        <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.draw/src/leaflet.draw.css"/>
+ <link rel="stylesheet" href="./data/leaflet-ruler.css" />
+   <link href='./data/leaflet.fullscreen.css' rel='stylesheet' />
+   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .coordinate {
+            position: absolute;
+            bottom: 10px;
+            right: 50%;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background-color: #000000;
+            color: #fff;
+            border: 1px solid red;
+            border-radius: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map">
+        <div class="leaflet-control coordinate"></div>
+    </div>
+    <button class="zoom-to-layer">Zoom to layer</button>
+</body>
+
+</html>
+
+<!-- leaflet js  -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="./data/accident.js"></script>
+<script src="./data/taroudant.js"></script>
+<script src="./data/ecoles.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
+        <script src="https://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+        <script src="./data/leaflet.browser.print.js"></script>
+        <script src="./data/leaflet.browser.print.utils.js"></script>
+        <script src="./data/leaflet.browser.print.sizes.js"></script>
+        <script src='./data/Leaflet.fullscreen.min.js'></script>
+        <script src="./data/L.Control.Locate.min.js" charset="utf-8"></script>
+ <script src="./data/main.js" charset="utf-8"></script>
+ 
+
+    <script src="./data/leaflet-ruler.js"></script>
+
+
+
+
+<script>
+    // Map initialization 
+    var map = L.map('map', {
+    fullscreenControl: {
+        pseudoFullscreen: false
+    }
+  }).setView([30.466586, -8.873402], 14);
+    map.zoomControl.setPosition('topright');
+      L.control.locate().addTo(map);
+      
+
+
+
+
+    /*==============================================
+                TILE LAYER and WMS
+    ================================================*/
+    //osm layer
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    osm.addTo(map);
+    // map.addLayer(osm)
+
+    // google street 
+    googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    });
+    // googleStreets.addTo(map);
+
+    //google satellite
+    googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    });
+    // googleSat.addTo(map)
+
+
+
+    /*==============================================
+                        MARKER
+    ================================================*/
+    var myIcon = L.icon({
+        iconUrl: 'img/red_marker.png',
+        iconSize: [40, 40],
+    });
+    var singleMarker = L.marker([30.466586, -8.873402], { icon: myIcon, draggable: true });
+    var popup = singleMarker.bindPopup('This is the taroudant. ' + singleMarker.getLatLng()).openPopup()
+    popup.addTo(map);
+
+
+
+    /*==============================================
+                GEOJSON
+    ================================================*/
+    var taroudantData = L.geoJSON(taroudantJSON).addTo(map)
+      var geojsonMarkerOptions = {
+    radius: 8,
+    fillColor: "red",
+    color: "red",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8
+};
+    var accidentData = L.geoJSON(accident, {
+    onEachFeature : function(feature, layer){
+        var popupContent =  '<h4 class = "text-primary">Accident</h4>' +
+                            '<div class="container"><table class="table table-striped">' +
+                            '<thead><tr><th>Properties</th><th></th></tr></thead>' +
+                            '<tbody><tr><td> accident </td><td>'+ feature.properties.accident +'</td></tr>' +
+                            '<tr><td>Permis </td><td>' + feature.properties.Permis +'</td></tr>' +
+                            '<tr><td> temps_acc</td><td>' + feature.properties.temps_acc + '</td></tr>';
+        layer.bindPopup(popupContent)
+    },
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng,geojsonMarkerOptions);
+    }
+}).addTo(map);
+          var geojsonMarkerOptions = {
+    radius: 8,
+    fillColor: "green",
+    color: "red",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8
+};
+
+    
+  
+    var ecolesData = L.geoJSON(ecoles, {
+    onEachFeature : function(feature, layer){
+        var popupContent =  '<h4 class = "text-primary">Ecoles</h4>' +
+                            '<div class="container"><table class="table table-striped">' +
+                            '<thead><tr><th>Name</th><th></th></tr></thead>' +
+                            '<tbody><tr><td>Comment</td><td>'+ feature.properties.Comment +'</td></tr>' +
+                            '<tr><td>DateTime </td><td>' + feature.properties.DateTime  +'</td></tr>';
+        layer.bindPopup(popupContent)
+    },
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng,geojsonMarkerOptions);
+    }
+}).addTo(map);
+
+        L.control.ruler().addTo(map);
+
+    /*==============================================
+                    LAYER CONTROL
+    ================================================*/
+    var baseMaps = {
+        "OSM": osm,
+        'Google Street': googleStreets,
+        "Google Satellite": googleSat,
+    };
+    var overlayMaps = {
+        'taroudant Data': taroudantData,
+        "First Marker": singleMarker,
+        'accident Data': accidentData,
+        'ecoles Data': ecolesData,
+    };
+    // map.removeLayer(singleMarker)
+
+    L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
+var drawnItems = new L.FeatureGroup();
+
+            var drawControl = new L.Control.Draw({
+                position: 'bottomright',
+                edit: {
+                    featureGroup: drawnItems,
+                    remove: false,
+                    edit: false
+                },
+                draw: {
+                    circlemarker: false,
+                }
+            });
+            map.addControl(drawControl);
+
+            map.createPane("new-pane");
+
+            L.control.scale({position:'topleft'}).addTo(map);
+
+            map.on(L.Draw.Event.CREATED, function (e) {
+                var type = e.layerType,
+                    layer = e.layer;
+
+                if (type === 'marker') {
+                    layer.bindPopup('A popup!');
+                }
+
+                drawnItems.addLayer(layer);
+                map.addLayer(drawnItems);
+            });
+            
+
+            var customActionToPrint = function(context, mode) {
+                return function() {
+                    window.alert("We are printing the MAP. Let's do Custom print here!");
+                    context._printCustom(mode);
+                }
+            }
+
+            L.control.browserPrint({
+        
+                closePopupsOnPrint: false,
+                printModes: [
+                    L.control.browserPrint.mode.landscape("Tabloid VIEW", "Tabloid"),
+                    L.control.browserPrint.mode("Alert", "User specified print action", "A6", customActionToPrint, false),
+                    L.control.browserPrint.mode.landscape(),
+                    "PORTrait",
+                    L.control.browserPrint.mode.auto("Auto", "B4"),
+                    L.control.browserPrint.mode.custom("Séléctionnez la zone", "B5")
+                ]
+
+            }).addTo(map);
+
+            L.Control.BrowserPrint.Utils.registerLayer(L.TileLayer.WMS, 'L.TileLayer.WMS', function(layer) {
+                console.info("Printing WMS layer.");
+                return L.tileLayer.wms(layer._url, layer.options);
+            });
+
+            L.popup({minWidth: 5}).setLatLng(L.latLng(30.466586, -8.873402)).setContent("Leaflet browser print plugin with custom print Layer and content").openOn(map);
+
+            var markers = L.markerClusterGroup();
+
+            for (var i = 0; i < addressPoints.length; i++) {
+                var a = addressPoints[i];
+                var title = a[2];
+                var marker = L.marker(new L.LatLng(a[0], a[1]), { title: title });
+                marker.bindPopup(title);
+                markers.addLayer(marker);
+            }
+
+            // We are not cloning markercluster to preserve original clasterization behavior and prevent OutOfMemory problems
+            L.Control.BrowserPrint.Utils.registerLayer(L.MarkerClusterGroup, 'L.MarkerClusterGroup', function (layer, utils) {
+                return layer;
+            });
+
+            // On print end we invalidate markercluster to update markers;
+            map.on(L.Control.BrowserPrint.Event.PrintEnd, function(e) {
+                map.removeLayer(markers);
+                map.addLayer(markers);
+            });
+
+            map.addLayer(markers);
+
+
+    /*==============================================
+                    LEAFLET EVENTS
+    ================================================*/
+    map.on('mouseover', function () {
+        console.log('your mouse is over the map')
+    })
+
+    map.on('mousemove', function (e) {
+        document.getElementsByClassName('coordinate')[0].innerHTML = 'lat: ' + e.latlng.lat + 'lng: ' + e.latlng.lng;
+        console.log('lat: ' + e.latlng.lat, 'lng: ' + e.latlng.lng)
+    })
+
+
+  
+
+     /*==============================================
+                    ZOOM TO LAYER
+    ================================================*/
+    $('.zoom-to-layer').click(function(){
+        map.setView([30.466586, -8.873402], 14)
+    })
+
+    
+
+</script>
+</html>
